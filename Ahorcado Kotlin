@@ -1,0 +1,103 @@
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var wordTextView: TextView
+    private lateinit var guessButton: Button
+    private lateinit var letterInput: EditText
+    private lateinit var hangmanImageView: ImageView
+
+    private val wordList = listOf("HELLO", "WORLD", "ANDROID", "STUDIO")
+    private var currentWord = ""
+    private var guessedWord = ""
+    private var remainingGuesses = 6
+    private var hangmanStage = 0
+
+    private val hangmanImages = intArrayOf(
+        R.drawable.hangman_0,
+        R.drawable.hangman_1,
+        R.drawable.hangman_2,
+        R.drawable.hangman_3,
+        R.drawable.hangman_4,
+        R.drawable.hangman_5,
+        R.drawable.hangman_6
+    )
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        wordTextView = findViewById(R.id.wordTextView)
+        guessButton = findViewById(R.id.guessButton)
+        letterInput = findViewById(R.id.letterInput)
+        hangmanImageView = findViewById(R.id.hangmanImageView)
+
+        startNewGame()
+
+        guessButton.setOnClickListener {
+            val letter = letterInput.text.toString().toUpperCase()
+            if (letter.isNotEmpty() && letter.length == 1) {
+                checkGuess(letter[0])
+                letterInput.text.clear()
+            }
+        }
+    }
+
+    private fun startNewGame() {
+        currentWord = wordList.random()
+        guessedWord = "_".repeat(currentWord.length)
+        remainingGuesses = 6
+        hangmanStage = 0
+        updateWordTextView()
+        updateHangmanImage()
+    }
+
+    private fun checkGuess(letter: Char) {
+        if (currentWord.contains(letter)) {
+            val updatedWord = StringBuilder(guessedWord)
+            for (i in currentWord.indices) {
+                if (currentWord[i] == letter) {
+                    updatedWord[i] = letter
+                }
+            }
+            guessedWord = updatedWord.toString()
+            updateWordTextView()
+            if (!guessedWord.contains("_")) {
+                // Player wins
+                showResult("Congratulations! You guessed the word.")
+            }
+        } else {
+            remainingGuesses--
+            hangmanStage++
+            updateHangmanImage()
+            if (remainingGuesses == 0) {
+                // Player loses
+                showResult("Oops! You ran out of guesses. The word was $currentWord.")
+            }
+        }
+    }
+
+    private fun updateWordTextView() {
+        wordTextView.text = guessedWord
+    }
+
+    private fun updateHangmanImage() {
+        if (hangmanStage < hangmanImages.size) {
+            hangmanImageView.setImageResource(hangmanImages[hangmanStage])
+            hangmanImageView.visibility = View.VISIBLE
+        } else {
+            hangmanImageView.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun showResult(message: String) {
+        // Display result message or start a new game
+        // ...
+    }
+}
